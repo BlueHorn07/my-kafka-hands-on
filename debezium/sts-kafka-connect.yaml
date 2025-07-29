@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: debezium-kafka-connect
+  namespace: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debezium-kafka-connect
+  template:
+    metadata:
+      labels:
+        app: debezium-kafka-connect
+    spec:
+      containers:
+        - name: kafka-connect
+          image: debezium/kafka-connect:2.6.0.Final
+          ports:
+            - containerPort: 8083
+          env:
+            - name: KAFKA_CONNECT_BOOTSTRAP_SERVERS
+              value: kafka-broker-headless.kafka.svc.cluster.local:9092
+            - name: KAFKA_CONNECT_REST_PORT
+              value: "8083"
+            - name: KAFKA_CONNECT_GROUP_ID
+              value: debezium-connect-group
+            - name: KAFKA_CONNECT_CONFIG_STORAGE_TOPIC
+              value: debezium-connect-configs
+            - name: KAFKA_CONNECT_OFFSET_STORAGE_TOPIC
+              value: debezium-connect-offsets
+            - name: KAFKA_CONNECT_STATUS_STORAGE_TOPIC
+              value: debezium-connect-status
+            - name: KAFKA_CONNECT_KEY_CONVERTER
+              value: org.apache.kafka.connect.json.JsonConverter
+            - name: KAFKA_CONNECT_VALUE_CONVERTER
+              value: org.apache.kafka.connect.json.JsonConverter
