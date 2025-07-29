@@ -15,23 +15,50 @@ spec:
     spec:
       containers:
         - name: kafka-connect
-          image: debezium/kafka-connect:2.6.0.Final
+          image: confluentinc/cp-kafka-connect:7.2.15
           ports:
             - containerPort: 8083
+          readinessProbe:
+            httpGet:
+              port: 8083
+              path: /connectors
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              port: 8083
+              path: /connectors
+            initialDelaySeconds: 15
+            periodSeconds: 15
           env:
             - name: KAFKA_CONNECT_BOOTSTRAP_SERVERS
               value: kafka-broker-headless.kafka.svc.cluster.local:9092
             - name: KAFKA_CONNECT_REST_PORT
               value: "8083"
-            - name: KAFKA_CONNECT_GROUP_ID
+            - name: GROUP_ID
               value: debezium-connect-group
-            - name: KAFKA_CONNECT_CONFIG_STORAGE_TOPIC
+            - name: ADVERTISED_PORT
+              value: "8083"
+            - name: CONFIG_STORAGE_TOPIC
               value: debezium-connect-configs
-            - name: KAFKA_CONNECT_OFFSET_STORAGE_TOPIC
+            - name: OFFSET_STORAGE_TOPIC
               value: debezium-connect-offsets
-            - name: KAFKA_CONNECT_STATUS_STORAGE_TOPIC
+            - name: STATUS_STORAGE_TOPIC
               value: debezium-connect-status
-            - name: KAFKA_CONNECT_KEY_CONVERTER
+            - name: KEY_CONVERTER
               value: org.apache.kafka.connect.json.JsonConverter
-            - name: KAFKA_CONNECT_VALUE_CONVERTER
+            - name: VALUE_CONVERTER
               value: org.apache.kafka.connect.json.JsonConverter
+            - name: REST_ADVERTISED_HOST_NAME
+              value: $(MY_POD_IP)
+            - name: REPLICATION_FACTOR
+              value: "1"
+            - name: REST_ADVERTISED_LISTENER
+              value: PLAINTEXT://$(MY_POD_IP)
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
