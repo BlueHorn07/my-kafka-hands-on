@@ -1,0 +1,11 @@
+zookeeper:
+  enabled: false
+
+kraft:
+  enabled: true
+
+controller: # KRaft mode
+  replicaCount: 3
+
+broker:
+  replicaCount: 3
